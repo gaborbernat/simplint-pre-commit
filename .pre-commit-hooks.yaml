@@ -1,0 +1,10 @@
+-   id: simplint
+    name: 'simplint'
+    description: 'Lint Python with extra checks that make it easier to read and review, and apply safe fixes'
+    entry: simplint check --fix
+    language: python
+    'types_or': [python, pyi]
+    args: []
+    require_serial: true
+    additional_dependencies: []
+    minimum_pre_commit_version: '2.9.2'
