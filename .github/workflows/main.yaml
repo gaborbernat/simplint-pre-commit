@@ -26,7 +26,11 @@ jobs:
           enable-cache: "false"
       - name: 🪞 Run pre-commit-mirror-maker
         run: >-
-          uvx -p 3.15 --from pre-commit-mirror-maker pre-commit-mirror . --language=python --package-name=pyproject-fmt --files-regex '(^|/)pyproject\.toml$'
+          uvx -p 3.15 --from pre-commit-mirror-maker pre-commit-mirror . --id=simplint --language=python --package-name=simplint --entry='simplint check --fix' --types-or=python --types-or=pyi --require-serial --description='Lint Python with extra checks that make it easier to read and review, and apply safe fixes'
+      # simplint indexes what every module imports, so it lints the whole project rather than the changed files
+      - name: 📂 Lint the whole project
+        run: |
+          grep -q 'pass_filenames:' .pre-commit-hooks.yaml || sed -i 's/^    require_serial: true$/&\n    pass_filenames: false/' .pre-commit-hooks.yaml
       - name: 📝 Update README with current version
         run: |
           VERSION=$(cat .version)
