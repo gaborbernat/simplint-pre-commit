@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   pull_request:
   schedule:
-    - cron: "30 8 * * *"
+    - cron: "11 8 * * *"
 permissions:
   contents: write
 jobs:
