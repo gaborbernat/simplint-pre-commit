@@ -3,9 +3,10 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # simplint's release workflow sends this once the version is on PyPI
+  repository_dispatch:
+    types: [release]
   pull_request:
-  schedule:
-    - cron: "11 8 * * *"
 permissions:
   contents: write
 jobs:
@@ -24,6 +25,18 @@ jobs:
         with:
           version: "latest"
           enable-cache: "false"
+      # PyPI's JSON API can serve the previous version for a few minutes after a publish
+      - name: ⏳ Wait for the release on PyPI
+        if: github.event_name == 'repository_dispatch'
+        run: |
+          for _ in $(seq 60); do
+            latest=$(curl -fsS https://pypi.org/pypi/simplint/json | jq -r .info.version) && [ "$latest" = "$VERSION" ] && exit 0
+            sleep 10
+          done
+          echo "::error::PyPI still lists ${latest:-nothing} as the newest simplint, not $VERSION"
+          exit 1
+        env:
+          VERSION: ${{ github.event.client_payload.version }}
       - name: 🪞 Run pre-commit-mirror-maker
         run: >-
           uvx -p 3.15 --from pre-commit-mirror-maker pre-commit-mirror . --id=simplint --language=python --package-name=simplint --entry='simplint check --fix' --types-or=python --types-or=pyi --require-serial --description='Lint Python with extra checks that make it easier to read and review, and apply safe fixes'
@@ -34,7 +47,7 @@ jobs:
       - name: 📝 Update README with current version
         run: |
           VERSION=$(cat .version)
-          sed -i "s/rev: \".*\"/rev: \"v$VERSION\"/" README.md
+          sed -i "s/^    rev: .*/    rev: v$VERSION/" README.md
       - name: 💅 Format generated files
         run: uvx --python 3.15 prek run --all-files || true
       - name: 🔄 Commit fixes and update tag
