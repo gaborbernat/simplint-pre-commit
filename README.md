@@ -13,7 +13,7 @@ Add it to your `.pre-commit-config.yaml`, between Ruff's check and format hooks:
 
 ```yaml
   - repo: https://github.com/gaborbernat/simplint-pre-commit
-    rev: v0.2.2
+    rev: v0.10.2
     hooks:
       - id: simplint
 ```
